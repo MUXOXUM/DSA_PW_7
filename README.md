@@ -42,7 +42,7 @@
 
 ```bash
 cd server
-npm install ws
+npm install
 node server
 ```
 
