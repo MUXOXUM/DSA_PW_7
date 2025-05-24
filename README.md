@@ -26,6 +26,13 @@
 
 ---
 
+## Примеры работы
+
+![Screenshot 1](screenshots/1.png)
+![Screenshot 2](screenshots/2.png)
+
+---
+
 ## Инструкция по запуску проекта
 
 Для работы требуется установленный Node.js.

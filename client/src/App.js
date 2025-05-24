@@ -43,12 +43,38 @@ function App() {
   // WebSocket для аукционных событий
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:4003');
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setEvents((prev) => [...prev.slice(-10), data]);
+  
+    ws.onopen = () => {
+      console.log('WebSocket connected (ws://localhost:4003)');
     };
-    return () => ws.close();
+  
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setEvents((prevEvents) => {
+          // Обрезаем до 10 последних элементов, включая новый
+          const newEvents = [...prevEvents, data];
+          return newEvents.slice(-10);
+        });
+      } catch (e) {
+        console.error('Ошибка парсинга JSON:', e);
+      }
+    };
+  
+    ws.onclose = (event) => {
+      console.log(`WebSocket закрыт (код: ${event.code})`);
+    };
+  
+    return () => {
+      ws.close();
+      console.log('WebSocket закрыт вручную');
+    };
   }, []);
+  
 
   // WebSocket для чата
   useEffect(() => {
@@ -134,7 +160,7 @@ function App() {
             <h2>Цены на ресурсы</h2>
             <ul>
               {Object.entries(prices).map(([resource, price]) => (
-                <li key={resource}>{resource}: {price.toFixed(2)}</li>
+                <li key={resource}>{resource}: {price != null ? price.toFixed(2) : '—'}</li>
               ))}
             </ul>
           </div>

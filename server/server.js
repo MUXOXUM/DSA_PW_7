@@ -1,84 +1,126 @@
 const WebSocket = require('ws');
+const { v4: uuidv4 } = require('uuid');
 
-// Хранилище сессий и данных
-const sessions = new Map();
-const resources = ['Ore', 'Fuel', 'Crystals'];
-const prices = { Ore: 100, Fuel: 200, Crystals: 300 };
+// --- Constants ---
+const PORTS = {
+  TCP: 4001,
+  UDP: 4002,
+  AUCTION: 4003,
+  CHAT: 4004,
+};
+const resources = ['Orium', 'Fuelium', 'Cractonium', 'Elizabentite'];
+const prices = { Orium: 100, Fuelium: 200, Cractonium: 250, Elizabentite: 600 };
 const events = [];
+const sessions = new Map();
 
-// WebSocket сервер для TCP-эмуляции (регистрация кораблей, порт 4001)
-const tcpWss = new WebSocket.Server({ port: 4001 });
+/**
+ * Безопасно парсит JSON
+ * @param {string} str
+ * @returns {object|null}
+ */
+function safeJSON(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Отправляет сообщение клиенту
+ * @param {WebSocket} ws
+ * @param {object} data
+ */
+function send(ws, data) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
+}
+
+/**
+ * Широковещательная отправка
+ * @param {Set<WebSocket>} clients
+ * @param {object} data
+ */
+function broadcast(clients, data) {
+  for (const client of clients) {
+    send(client, data);
+  }
+}
+
+// --- TCP-эмуляция (регистрация кораблей) ---
+const tcpWss = new WebSocket.Server({ port: PORTS.TCP });
 tcpWss.on('connection', (ws) => {
-  const sessionId = Math.random().toString(36).substring(2);
+  const sessionId = uuidv4();
   sessions.set(sessionId, ws);
-  ws.send(JSON.stringify({ type: 'session', sessionId }));
+  send(ws, { type: 'session', sessionId });
 
   ws.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    ws.send(JSON.stringify({ type: 'response', message: `Received: ${data.message}` }));
+    const data = safeJSON(message.toString());
+    if (!data || typeof data.message !== 'string') {
+      send(ws, { type: 'error', message: 'Invalid message format' });
+      return;
+    }
+    send(ws, { type: 'response', message: `Received: ${data.message}` });
   });
 
   ws.on('close', () => {
     sessions.delete(sessionId);
   });
 });
-console.log('TCP-emulated WebSocket server on port 4001');
+console.log(`TCP-emulated WebSocket server on port ${PORTS.TCP}`);
 
-// WebSocket сервер для UDP-эмуляции (потоковая передача цен, порт 4002)
-const udpWss = new WebSocket.Server({ port: 4002 });
+// --- UDP-эмуляция (потоковая передача цен) ---
+const udpWss = new WebSocket.Server({ port: PORTS.UDP });
 udpWss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ type: 'prices', prices }));
+  send(ws, { type: 'prices', prices });
 });
 setInterval(() => {
   resources.forEach((resource) => {
     prices[resource] = Math.max(50, prices[resource] + (Math.random() * 20 - 10));
   });
-  udpWss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'prices', prices }));
-    }
-  });
+  broadcast(udpWss.clients, { type: 'prices', prices });
 }, 1000);
-console.log('UDP-emulated WebSocket server on port 4002');
+console.log(`UDP-emulated WebSocket server on port ${PORTS.UDP}`);
 
-// WebSocket сервер для аукционных событий (порт 4003)
-const wss = new WebSocket.Server({ port: 4003 });
+// --- Аукционные события ---
+const wss = new WebSocket.Server({ port: PORTS.AUCTION });
 wss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ type: 'welcome', message: 'Connected to Cosmic Exchange' }));
+  send(ws, { type: 'welcome', message: '[Connected to Cosmic Exchange]' });
 });
-setInterval(() => {
-  const event = {
-    type: 'artifact',
-    message: `Unique artifact "${Math.random().toString(36).substring(7)}" appeared!`,
-    timestamp: new Date(),
-  };
-  events.push(event);
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(event));
-    }
-  });
-}, Math.random() * 240000 + 60000); // 1-5 минут
-console.log('WebSocket server on port 4003');
+function scheduleAuctionEvent() {
+  const timeout = Math.random() * 30000 + 30000; // 30 сек - 1 мин
+  setTimeout(() => {
+    const event = {
+      type: 'artifact',
+      message: `Artifact "Heart of star ${Math.random().toString(36).substring(3).toUpperCase()}" appeared!`,
+      timestamp: new Date(),
+    };
+    events.push(event);
+    broadcast(wss.clients, event);
+    scheduleAuctionEvent();
+  }, timeout);
+}
+scheduleAuctionEvent();
+console.log(`WebSocket server on port ${PORTS.AUCTION}`);
 
-// WebSocket сервер для чата (порт 4004)
-const chatWss = new WebSocket.Server({ port: 4004 });
+// --- Чат ---
+const chatWss = new WebSocket.Server({ port: PORTS.CHAT });
 chatWss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ type: 'chat', message: 'Connected to chat' }));
+  send(ws, { type: 'chat', message: '[Connected to chat]' });
 
   ws.on('message', (message) => {
-    const data = JSON.parse(message.toString());
+    const data = safeJSON(message.toString());
+    if (!data || typeof data.message !== 'string') {
+      send(ws, { type: 'error', message: 'Invalid chat message' });
+      return;
+    }
     console.log(`Chat: ${data.message}`);
-    // Рассылаем сообщение всем клиентам
-    chatWss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'chat', message: data.message }));
-      }
-    });
+    broadcast(chatWss.clients, { type: 'chat', message: data.message });
   });
 
   ws.on('close', () => {
     console.log('Chat client disconnected');
   });
 });
-console.log('Chat WebSocket server on port 4004');
+console.log(`Chat WebSocket server on port ${PORTS.CHAT}`);
