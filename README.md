@@ -27,8 +27,9 @@
 ---
 
 ## Примеры работы
-
+Страничка клиента:
 ![Screenshot 1](screenshots/1.png)
+Страничка администратора:
 ![Screenshot 2](screenshots/2.png)
 
 ---
