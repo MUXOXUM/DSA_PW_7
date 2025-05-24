@@ -86,63 +86,69 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Cosmic Exchange</h1>
-      <div className="server-management">
-        <h2>Manage Servers</h2>
-        <input
-          placeholder="IP"
-          value={newServer.ip}
-          onChange={(e) => setNewServer({ ...newServer, ip: e.target.value })}
-        />
-        <input
-          placeholder="Port"
-          value={newServer.port}
-          onChange={(e) => setNewServer({ ...newServer, port: e.target.value })}
-        />
-        <button onClick={addServer}>Add Server</button>
-        <ul>
-          {servers.map((server, index) => (
-            <li key={index}>
-              {server.ip}:{server.port}
-              <button onClick={() => connectTCP(server.ip, server.port)}>Connect</button>
-              <button onClick={() => removeServer(index)}>Remove</button>
-            </li>
-          ))}
-        </ul>
-        {sessionId && <p>Session ID: {sessionId}</p>}
-      </div>
-      <div className="market-data">
-        <h2>Resource Prices</h2>
-        <ul>
-          {Object.entries(prices).map(([resource, price]) => (
-            <li key={resource}>{resource}: {price.toFixed(2)}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="events">
-        <h2>Auction Events</h2>
-        <ul>
-          {events.map((event, index) => (
-            <li key={index}>
-              {event.timestamp ? event.timestamp.toLocaleString() : ''}: {event.message}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="chat">
-        <h2>Chat with Admin</h2>
-        <div className="chat-messages">
-          {chatMessages.map((message, index) => (
-            <p key={index}>{message}</p>
-          ))}
+      <h1>Космическая биржа</h1>
+      <div className="columns-container">
+        <div className="left-column">
+          <div className="server-management">
+            <h2>Управление серверами</h2>
+            <input
+              placeholder="IP-адрес"
+              value={newServer.ip}
+              onChange={(e) => setNewServer({ ...newServer, ip: e.target.value })}
+            />
+            <input
+              placeholder="Порт"
+              value={newServer.port}
+              onChange={(e) => setNewServer({ ...newServer, port: e.target.value })}
+            />
+            <button onClick={addServer}>Добавить сервер</button>
+            <ul>
+              {servers.map((server, index) => (
+                <li key={index}>
+                  {server.ip}:{server.port}
+                  <button onClick={() => connectTCP(server.ip, server.port)}>Подключиться</button>
+                  <button onClick={() => removeServer(index)}>Удалить</button>
+                </li>
+              ))}
+            </ul>
+            {sessionId && <p>ID сессии: {sessionId}</p>}
+          </div>
+          <div className="chat">
+            <h2>Чат с администратором</h2>
+            <div className="chat-messages">
+              {chatMessages.map((message, index) => (
+                <p key={index}>{message}</p>
+              ))}
+            </div>
+            <input
+              placeholder="Введите сообщение..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+            />
+            <button onClick={sendChatMessage}>Отправить</button>
+          </div>
         </div>
-        <input
-          placeholder="Type your message..."
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-        />
-        <button onClick={sendChatMessage}>Send</button>
+        <div className="right-column">
+          <div className="market-data">
+            <h2>Цены на ресурсы</h2>
+            <ul>
+              {Object.entries(prices).map(([resource, price]) => (
+                <li key={resource}>{resource}: {price.toFixed(2)}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="events">
+            <h2>События аукциона</h2>
+            <ul>
+              {events.map((event, index) => (
+                <li key={index}>
+                  {event.timestamp ? event.timestamp.toLocaleString() : ''}: {event.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

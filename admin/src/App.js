@@ -29,21 +29,23 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Cosmic Exchange Admin Panel</h1>
-      <div className="chat">
-        <h2>Chat with Users</h2>
-        <div className="chat-messages">
-          {chatMessages.map((message, index) => (
-            <p key={index}>{message}</p>
-          ))}
+      <h1>Панель администратора</h1>
+      <div className="single-column">
+        <div className="chat">
+          <h2>Чат с пользователями</h2>
+          <div className="chat-messages">
+            {chatMessages.map((message, index) => (
+              <p key={index}>{message}</p>
+            ))}
+          </div>
+          <input
+            placeholder="Введите сообщение..."
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+          />
+          <button onClick={sendChatMessage}>Отправить</button>
         </div>
-        <input
-          placeholder="Type your message..."
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-        />
-        <button onClick={sendChatMessage}>Send</button>
       </div>
     </div>
   );

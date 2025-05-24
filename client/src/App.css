@@ -1,26 +1,46 @@
 .App {
   text-align: center;
-  background: linear-gradient(to bottom, #0a0a23, #1b1b32);
+  background: linear-gradient(to bottom, #23272f, #444950);
   min-height: 100vh;
-  color: white;
+  color: #e0e0e0;
   padding: 20px;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Arial', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif', 'Roboto', 'Open Sans', 'Noto Sans', 'PT Sans', 'Fira Sans', 'Ubuntu', 'Helvetica Neue', 'Arial', 'Liberation Sans', 'sans-serif';
+}
+
+.columns-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 32px;
+  max-width: 1300px;
+  margin: 40px auto 0 auto;
+}
+
+.left-column, .right-column {
+  flex: 1 1 0;
+  min-width: 380px;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  word-break: break-word;
 }
 
 h1 {
   font-size: 2.5em;
-  text-shadow: 0 0 10px #00ffcc;
+  color: #e0e0e0;
 }
 
 .server-management,
 .market-data,
 .events,
 .chat {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 600px;
+  background: #353940;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 0;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+  color: #e0e0e0;
 }
 
 input {
@@ -28,8 +48,10 @@ input {
   margin: 5px;
   border: none;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: #23272f;
+  color: #e0e0e0;
+  outline: none;
+  border: 1px solid #444950;
 }
 
 button {
@@ -37,14 +59,14 @@ button {
   margin: 5px;
   border: none;
   border-radius: 5px;
-  background: #00ffcc;
-  color: #0a0a23;
+  background: #6c6f76;
+  color: #e0e0e0;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 button:hover {
-  background: #00cc99;
+  background: #888b92;
 }
 
 ul {
@@ -54,7 +76,7 @@ ul {
 
 li {
   padding: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid #444950;
 }
 
 .chat-messages {
@@ -62,7 +84,7 @@ li {
   overflow-y: auto;
   margin-bottom: 10px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
+  background: #23272f;
   border-radius: 5px;
 }
 
